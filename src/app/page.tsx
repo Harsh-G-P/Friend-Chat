@@ -1,103 +1,137 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import NotLoggedIn from "@/components/NotLoggedIn";
+import { toast } from "sonner";
+import { acceptFriendRequest } from "@/lib/friends";
+import FriendChat from "@/components/dashboard/FriendChat";
+import FriendsSection from "@/components/dashboard/FriendsSection";
+import SideBar from "@/components/dashboard/SideBar";
+import FriendProfile from "@/components/dashboard/FriendProfile";
+
+
+/* ---------- Types ---------- */
+export interface Friend {
+  _id: string;
+  username: string;
+  name?: string;
+  image?: string;
+}
+
+export default function DiscordFriends() {
+  const { data: session, status } = useSession();
+  const [selectedTab, setSelectedTab] = useState("friends");
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [requests, setRequests] = useState<Friend[]>([]);
+  const [newFriend, setNewFriend] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [activeFriend, setActiveFriend] = useState<Friend | null>(null);
+
+  async function loadData() {
+    setLoading(true);
+    const res = await fetch("/api/friends/list");
+    const data = await res.json();
+    setFriends(data.friends || []);
+    setRequests(data.requests || []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    if (status === "authenticated") loadData();
+  }, [status]);
+
+  async function handleAdd() {
+    if (!newFriend.trim()) return;
+    try {
+      const res = await fetch("/api/friends/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUsername: newFriend.trim() }),
+      });
+      const data = await res.json();
+      setNewFriend("");
+      if (data.error) return toast.error(data.error);
+      if (data.message) return toast.error(data.message);
+      if (data.success) {
+        toast.success("Friend request sent!");
+        loadData();
+      }
+    } catch {
+      toast.error("Network error");
+    }
+  }
+
+  async function handleAccept(id: string) {
+    await acceptFriendRequest(id);
+    loadData();
+  }
+
+  if (status === "loading") {
+    return (
+      <div className="flex h-screen items-center justify-center text-white bg-[#313338]">
+        Loading...
+      </div>
+    );
+  }
+  if (!session) return <NotLoggedIn />;
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="flex h-[1050px] text-white bg-[#1918187f]">
+      {/* ---------- Left Sidebar ---------- */}
+      <SideBar
+        friends={friends}
+        selectedTab={selectedTab}
+        setSelectedTab={setSelectedTab}
+        activeFriend={activeFriend}
+        setActiveFriend={setActiveFriend}
+        session={session}
+      />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      <div className="flex-1 flex">
+        {activeFriend ? (
+          // ---------- Friend selected ----------
+          <>
+            {/* Middle: chat area */}
+            <div className="flex-1 flex flex-col bg-[#1f2022]">
+              <FriendChat friend={activeFriend} />
+            </div>
+
+            {/* Right: profile card */}
+            <FriendProfile friend={activeFriend} />
+          </>
+        ) : (
+          // ---------- No friend selected ----------
+          <div className="flex flex-1 bg-[#25262a]">
+            {/* Friends list column */}
+            <div className="flex-1 overflow-y-auto border-r border-[#1b1b1c]">
+              <FriendsSection
+                friends={friends}
+                requests={requests}
+                loading={loading}
+                activeFriend={activeFriend}
+                newFriend={newFriend}
+                setNewFriend={setNewFriend}
+                handleAdd={handleAdd}
+                handleAccept={handleAccept}
+                onSelectFriend={setActiveFriend}
+              />
+            </div>
+
+            {/* Active-Now side card */}
+            <div className="w-72 border-l border-[#1b1b1c] bg-[#1e2023] flex flex-col items-center">
+              <div className="mt-10 text-center px-4">
+                <h2 className="text-sm font-bold text-gray-200 mb-2">
+                  Active Now
+                </h2>
+                <p className="text-gray-400 text-sm leading-5">
+                  It’s quiet for now...
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
