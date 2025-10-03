@@ -26,14 +26,13 @@ export const authOptions: NextAuthOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
-
   callbacks: {
     async jwt({ token, user }) {
       if (user) token.id = (user as any).id;
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) (session.user as any).id = token.id;
+      if (token) (session.user as any).id = token.id;
       return session;
     },
   },
