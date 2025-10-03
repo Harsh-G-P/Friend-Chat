@@ -1,16 +1,20 @@
+import Image from "next/image";
+
+interface FriendItemProps {
+  name: string;
+  status: string;
+  online?: boolean;
+  image?: string;
+  onClick?: () => void;
+}
+
 export default function FriendItem({
   name,
   status,
   online = false,
   image,
   onClick,
-}: {
-  name: string;
-  status: string;
-  online?: boolean;
-  image?: string;
-  onClick?: () => void;
-}) {
+}: FriendItemProps) {
   return (
     <button
       onClick={onClick}
@@ -18,7 +22,15 @@ export default function FriendItem({
     >
       <div className="relative">
         {image ? (
-          <img src={image} alt={name} className="w-8 h-8 rounded-full object-cover" />
+          <div className="w-8 h-8 relative rounded-full overflow-hidden">
+            <Image
+              src={image}
+              alt={name}
+              fill
+              className="object-cover"
+              sizes="32px"
+            />
+          </div>
         ) : (
           <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#5865f2] text-white font-semibold">
             {name.charAt(0).toUpperCase()}
