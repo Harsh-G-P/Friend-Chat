@@ -1,27 +1,30 @@
 "use client";
 
-import { Users, Plus, ShoppingBag } from "lucide-react";
+import { Users, Plus } from "lucide-react"; 
 import { Friend } from "@/app/page";
 import FriendItem from "@/components/dashboard/FriendItem";
 import ProfileBar from "@/components/dashboard/ProfileBar";
 
-interface SidebarProps {
+interface SideBarProps {
   friends: Friend[];
   selectedTab: string;
   setSelectedTab: (tab: string) => void;
   activeFriend: Friend | null;
   setActiveFriend: (friend: Friend | null) => void;
-  session: any;
+  session: {
+    user?: {
+      name?: string | null;
+    } | null;
+  } | null;
 }
 
 export default function SideBar({
   friends,
   selectedTab,
   setSelectedTab,
-  activeFriend,
   setActiveFriend,
   session,
-}: SidebarProps) {
+}: SideBarProps) {
   return (
     <div className="flex flex-col h-full w-80 relative">
       <div className="flex flex-1 overflow-hidden">
@@ -38,7 +41,10 @@ export default function SideBar({
           >
             <Users size={20} />
           </button>
-          <button className="w-12 h-12 flex items-center justify-center rounded-3xl bg-[#2b2d31] hover:rounded-2xl hover:bg-green-600 transition-all">
+          <button
+            className="w-12 h-12 flex items-center justify-center rounded-3xl bg-[#2b2d31] hover:rounded-2xl hover:bg-green-600 transition-all"
+            onClick={() => setSelectedTab("add")}
+          >
             <Plus size={20} />
           </button>
         </div>
@@ -61,17 +67,18 @@ export default function SideBar({
               Direct Messages
             </h2>
             <div className="space-y-1 text-sm">
-              {friends.map((f) => (
-                <FriendItem
-                  key={f._id}
-                  name={f.name || f.username}
-                  status="Friend"
-                  image={f.image}
-                  online
-                  onClick={() => setActiveFriend(f)}
-                />
-              ))}
-              {friends.length === 0 && (
+              {friends.length > 0 ? (
+                friends.map((f) => (
+                  <FriendItem
+                    key={f._id}
+                    name={f.name || f.username}
+                    status="Friend"
+                    image={f.image}
+                    online={true}
+                    onClick={() => setActiveFriend(f)}
+                  />
+                ))
+              ) : (
                 <p className="text-gray-500 text-xs">No friends yet</p>
               )}
             </div>

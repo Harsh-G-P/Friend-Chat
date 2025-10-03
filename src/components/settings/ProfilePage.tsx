@@ -1,12 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { Camera } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export default function ProfilePage() {
 
-  const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
     username: "",
     name: "",
@@ -64,8 +64,8 @@ export default function ProfilePage() {
         } else {
           toast.error("❌ Upload failed");
         }
-      } catch (err) {
-        toast.error("❌ Something went wrong");
+      } catch {
+        toast.error("❌ Something went wrong" ) ;
       }
     };
   };
@@ -94,7 +94,7 @@ export default function ProfilePage() {
         } else {
           toast.error("❌ Banner upload failed");
         }
-      } catch (err) {
+      } catch {
         toast.error("❌ Something went wrong");
       }
     };
@@ -103,7 +103,6 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     try {
       const r = await fetch('/api/user', {
         method: 'PUT',
@@ -124,10 +123,8 @@ export default function ProfilePage() {
       } else {
         toast.error("❌ Update failed: " + data.message);
       }
-    } catch (error) {
+    } catch {
       toast.error("❌ Something went wrong");
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -210,12 +207,12 @@ export default function ProfilePage() {
             <div>
               <p className="mb-1 text-white font-medium">Banner Color</p>
               <div
-    className="w-10 h-10 rounded border border-gray-600 bg-center bg-cover"
-    style={{
-      backgroundImage: form.banner ? `url(${form.banner})` : "none",
-      backgroundColor: form.banner ? "transparent" : "#facc15", // fallback yellow
-    }}
-  />
+                className="w-10 h-10 rounded border border-gray-600 bg-center bg-cover"
+                style={{
+                  backgroundImage: form.banner ? `url(${form.banner})` : "none",
+                  backgroundColor: form.banner ? "transparent" : "#facc15",
+                }}
+              />
             </div>
           </div>
 
@@ -238,9 +235,11 @@ export default function ProfilePage() {
                 />
                 <div className="h-24 group-hover:brightness-75 flex items-center justify-center">
                   {form.banner ? (
-                    <img
+                    <Image
                       src={form.banner}
                       alt="banner"
+                      width={320}
+                      height={96}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -249,7 +248,6 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </div>
-
               </label>
 
               {/* ===== Avatar with upload ===== */}
@@ -262,10 +260,11 @@ export default function ProfilePage() {
                     ref={fileInputRef}
                     onChange={handleFileChange}
                   />
-                  <img
+                  <Image
                     src={form.image || "/1.jpg"}
                     alt="avatar"
-                    className="w-20 h-20 rounded-full border-4 border-[#232428] group-hover:brightness-75"
+                    fill
+                    className="rounded-full border-4 border-[#232428] group-hover:brightness-75"
                   />
                   <Camera
                     size={20}
@@ -312,13 +311,17 @@ export default function ProfilePage() {
             {/* Nameplate preview */}
             <p className="mt-4 text-sm text-gray-400">Nameplate Preview</p>
             <div className="flex items-center space-x-2 bg-[#232428] p-2 rounded mt-1 text-white">
-              <img
-                src={form.image || "/1.jpg"}
-                alt="avatar"
-                className="w-6 h-6 rounded-full"
-              />
+              <div className="w-6 h-6 relative rounded-full overflow-hidden">
+                <Image
+                  src={form.image || "/1.jpg"}
+                  alt="avatar"
+                  fill
+                  className="object-cover"
+                />
+              </div>
               <span>{form.name}</span>
             </div>
+
           </div>
         </div>
 
