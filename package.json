@@ -13,6 +13,7 @@
     "@100mslive/react-sdk": "^0.10.39",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
+    "emoji-picker-react": "^4.14.1",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.542.0",
     "mongoose": "^8.18.0",

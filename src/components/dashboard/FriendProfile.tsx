@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Friend } from "@/app/page";
+import { X } from "lucide-react";
 
 interface FriendProfileProps {
   friend: Friend & {
@@ -9,9 +10,15 @@ interface FriendProfileProps {
     about?: string;
     createdAt?: string;
   };
+  isMobileOpen?: boolean; // controls mobile overlay
+  onCloseMobile?: () => void; // function to close on mobile
 }
 
-export default function FriendProfile({ friend }: FriendProfileProps) {
+export default function FriendProfile({
+  friend,
+  isMobileOpen = false,
+  onCloseMobile,
+}: FriendProfileProps) {
   const joined = friend.createdAt
     ? new Date(friend.createdAt).toLocaleDateString("en-US", {
         year: "numeric",
@@ -20,8 +27,9 @@ export default function FriendProfile({ friend }: FriendProfileProps) {
       })
     : "—";
 
-  return (
-    <aside className="pt-[200px] w-80 bg-[#1e1f20] h-full flex flex-col border-l border-[#1b1b1c] p-3">
+  // Common profile content to avoid duplication
+  const ProfileContent = () => (
+    <>
       {/* Banner */}
       <div className="relative h-42 w-full">
         {friend.banner ? (
@@ -29,15 +37,13 @@ export default function FriendProfile({ friend }: FriendProfileProps) {
             src={friend.banner}
             alt="Banner"
             width={320}
-            height={168} // approximate 2:1 ratio
+            height={168}
             className="h-42 w-full object-cover rounded"
           />
         ) : (
           <div
             className="h-42 w-full rounded"
-            style={{
-              background: "linear-gradient(to right, #facc15 50%, #000 50%)",
-            }}
+            style={{ background: "linear-gradient(to right, #facc15 50%, #000 50%)" }}
           />
         )}
 
@@ -56,14 +62,10 @@ export default function FriendProfile({ friend }: FriendProfileProps) {
 
       {/* Username & name */}
       <div className="mt-16 px-2">
-        {friend.name && (
-          <p className="text-2xl text-white font-bold">{friend.name}</p>
-        )}
+        {friend.name && <p className="text-2xl text-white font-bold">{friend.name}</p>}
         <div className="flex items-center gap-2">
           <h2 className="text-xl text-white">{friend.username}</h2>
-          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#1d9a87] text-black">
-            #
-          </span>
+          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#1d9a87] text-black">#</span>
         </div>
       </div>
 
@@ -71,13 +73,36 @@ export default function FriendProfile({ friend }: FriendProfileProps) {
       <div className="mt-6 px-6 flex-1 space-y-4 text-sm overflow-y-auto">
         <div className="bg-[#343537] p-4 rounded-lg">
           <h3 className="font-bold text-white mb-1">About Me</h3>
-          <p className="text-white break-words">
-            {friend.about?.trim() || "No bio yet"}
-          </p>
+          <p className="text-white break-words">{friend.about?.trim() || "No bio yet"}</p>
           <h3 className="mt-5 font-bold text-white mb-1">Member Since</h3>
           <p className="text-white">{joined}</p>
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex pt-[200px] w-80 bg-[#1c2b29]  h-full flex-col border-l border-[#1b1b1c] p-3">
+        <ProfileContent />
+      </aside>
+
+      {/* Mobile Overlay */}
+      <div
+        className={`fixed top-0 left-0 z-50 h-full w-full md:hidden bg-[#1e1f20] transform transition-transform duration-300 ${
+          isMobileOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex justify-end p-4">
+          <button onClick={onCloseMobile} className="text-white">
+            <X size={24} />
+          </button>
+        </div>
+        <div className="pt-16 px-3 h-full overflow-y-auto">
+          <ProfileContent />
+        </div>
+      </div>
+    </>
   );
 }

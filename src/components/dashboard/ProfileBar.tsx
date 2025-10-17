@@ -27,15 +27,9 @@ export default function ProfileBar({ session }: ProfileBarProps) {
       </div>
 
       <div className="flex items-center gap-1">
-        <button className="p-2 rounded hover:bg-[#3a3c41]" aria-label="Mute">
-          <Mic size={14} />
-        </button>
-        <button className="p-2 rounded hover:bg-[#3a3c41]" aria-label="Deafen">
-          <Headphones size={14} />
-        </button>
         <Link href="/setting">
           <button className="p-2 rounded hover:bg-[#3a3c41]" aria-label="Settings">
-            <SettingsIcon size={14} />
+            <SettingsIcon size={16} />
           </button>
         </Link>
       </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { Users } from "lucide-react"; 
 import NotLoggedIn from "@/components/NotLoggedIn";
 import { toast } from "sonner";
 import { acceptFriendRequest } from "@/lib/friends";
@@ -9,7 +10,6 @@ import FriendChat from "@/components/dashboard/FriendChat";
 import FriendsSection from "@/components/dashboard/FriendsSection";
 import SideBar from "@/components/dashboard/SideBar";
 import FriendProfile from "@/components/dashboard/FriendProfile";
-
 
 /* ---------- Types ---------- */
 export interface Friend {
@@ -27,6 +27,9 @@ export default function DiscordFriends() {
   const [newFriend, setNewFriend] = useState("");
   const [loading, setLoading] = useState(true);
   const [activeFriend, setActiveFriend] = useState<Friend | null>(null);
+
+  // Mobile sidebar open state
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   async function loadData() {
     setLoading(true);
@@ -77,8 +80,18 @@ export default function DiscordFriends() {
   if (!session) return <NotLoggedIn />;
 
   return (
-    <div className="flex h-[1050px] text-white bg-[#1918187f]">
-      {/* ---------- Left Sidebar ---------- */}
+    <div className="flex h-screen text-white bg-[#1918187f] relative">
+      {/* ---------- Mobile Sidebar Button ---------- */}
+      <div className="absolute top-4 left-4 md:hidden z-50">
+        <button
+          onClick={() => setMobileSidebarOpen(true)}
+          className=" bg-[#2b2d31] rounded hover:bg-[#3a3c41] transition"
+        >
+          <Users size={24} />
+        </button>
+      </div>
+
+      {/* ---------- Sidebar ---------- */}
       <SideBar
         friends={friends}
         selectedTab={selectedTab}
@@ -86,24 +99,25 @@ export default function DiscordFriends() {
         activeFriend={activeFriend}
         setActiveFriend={setActiveFriend}
         session={session}
+        mobileSidebarOpen={mobileSidebarOpen}
+        setMobileSidebarOpen={setMobileSidebarOpen}
       />
 
+      {/* ---------- Main Content ---------- */}
       <div className="flex-1 flex">
         {activeFriend ? (
-          // ---------- Friend selected ----------
           <>
-            {/* Middle: chat area */}
+            {/* Chat Area */}
             <div className="flex-1 flex flex-col bg-[#1f2022]">
               <FriendChat friend={activeFriend} />
             </div>
 
-            {/* Right: profile card */}
+            {/* Right Profile */}
             <FriendProfile friend={activeFriend} />
           </>
         ) : (
-          // ---------- No friend selected ----------
           <div className="flex flex-1 bg-[#25262a]">
-            {/* Friends list column */}
+            {/* Friends List */}
             <div className="flex-1 overflow-y-auto border-r border-[#1b1b1c]">
               <FriendsSection
                 friends={friends}
@@ -114,20 +128,11 @@ export default function DiscordFriends() {
                 setNewFriend={setNewFriend}
                 handleAdd={handleAdd}
                 handleAccept={handleAccept}
-                onSelectFriend={setActiveFriend}
+                onSelectFriend={(f) => {
+                  setActiveFriend(f);
+                  setMobileSidebarOpen(false); // close sidebar on mobile
+                }}
               />
-            </div>
-
-            {/* Active-Now side card */}
-            <div className="w-72 border-l border-[#1b1b1c] bg-[#1e2023] flex flex-col items-center">
-              <div className="mt-10 text-center px-4">
-                <h2 className="text-sm font-bold text-gray-200 mb-2">
-                  Active Now
-                </h2>
-                <p className="text-gray-400 text-sm leading-5">
-                  It’s quiet for now...
-                </p>
-              </div>
             </div>
           </div>
         )}
